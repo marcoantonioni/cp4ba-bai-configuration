@@ -13,6 +13,12 @@ Run ./bai-cfg.sh
 
 Access your CR cluster and update the following sections
 
+### Get your CR 
+
+```
+oc get ICP4ACluster -n ${CP4BA_AUTO_NAMESPACE}
+```
+
 ### bai_configuration
 
 Add the following YAML snippet (keep aligned the value of 'workforce_insights_secret' with the secret created using shell script)

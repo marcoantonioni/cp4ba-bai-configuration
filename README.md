@@ -7,6 +7,8 @@ https://github.com/marcoantonioni/cp4ba-bai-configuration
 
 Review wfi contents and integrate scripts
 
+Problems during resource deletion... to be fixed asap
+
 ## Limitations
 
 1. Configured to patch 'Authoring' configuration only

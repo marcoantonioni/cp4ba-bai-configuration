@@ -1,5 +1,18 @@
 # Cloud Pak for Business Automation - BAI Configuration
 
+https://github.com/marcoantonioni/cp4ba-bai-configuration
+
+
+!!! TBD
+
+Review wfi contents and integrate scripts
+
+## Limitations
+
+1. Configured to patch 'Authoring' configuration only
+2. Tested only on 'Starter' deployment
+
+
 ## Update env vars in shell script
 
 Set your namespace in var CP4BA_AUTO_NAMESPACE
@@ -62,6 +75,7 @@ Pods of IAF INSIGHTS ENGINE
 
 ## Access ES storage
 ```
+export CP4BA_AUTO_NAMESPACE=cp4ba
 ES_USER=$(oc get cm -n ${CP4BA_AUTO_NAMESPACE} icp4adeploy-cp4ba-access-info -o jsonpath='{.data.bai-access-info}' | grep "Elasticsearch Username" | awk '{print $3}')
 ES_PASSW=$(oc get cm -n ${CP4BA_AUTO_NAMESPACE} icp4adeploy-cp4ba-access-info -o jsonpath='{.data.bai-access-info}' | grep "Elasticsearch Password" | awk '{print $3}')
 echo "ES CREDENTIALS: "${ES_USER} / ${ES_PASSW}

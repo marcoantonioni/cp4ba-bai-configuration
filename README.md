@@ -3,12 +3,6 @@
 https://github.com/marcoantonioni/cp4ba-bai-configuration
 
 
-!!! TBD
-
-Review wfi contents and integrate scripts
-
-Problems during resource deletion... to be fixed asap
-
 ## Limitations
 
 1. Configured to patch 'Authoring' configuration only
@@ -22,7 +16,13 @@ Set your namespace in var CP4BA_AUTO_NAMESPACE
 Set TRACE as you need
 
 ## Create 'custom-bpc-workforce-secret'
-Run ./bai-cfg.sh
+
+Run ./bai-cfg.sh ...your-namespace...
+```
+# example
+./bai-cfg.sh cp4ba
+```
+
 
 ## Update ICP4ACluster CR 
 

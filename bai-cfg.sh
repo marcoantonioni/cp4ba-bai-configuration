@@ -1,5 +1,6 @@
 #!/bin/bash
 
+FORCE_DELETION=false
 
 #-------------------------------
 resourceExist () {
@@ -32,7 +33,7 @@ waitForResourceCreated () {
 waitForEventprocessorReady () {
   while [ true ]
   do
-      _READY=$(oc get eventprocessors.eventprocessing.automation.ibm.com iaf-insights-engine-event-processor | grep -v NAME | awk '{print $2}')
+      _READY=$(oc get -n ${CP4BA_AUTO_NAMESPACE} eventprocessors.eventprocessing.automation.ibm.com iaf-insights-engine-event-processor | grep -v NAME | awk '{print $2}')
       if [ "${_READY}" = "True" ]; then
           break
       else
@@ -66,8 +67,6 @@ fi
 #-----------------------------------------------
 export TRACE=no
 export BPC_SECRET_NAME="custom-bpc-workforce-secret"
-
-if [ "a" == "b" ]; then
 
 #-----------------------------------------------
 # Create secret BPC Workforce
@@ -169,6 +168,8 @@ do
   all_csv=$(oc get csv --all-namespaces | grep -v NAMESPACE | wc -l)
   succeded_csv=$(oc get csv --all-namespaces | grep -v NAMESPACE | grep Succeeded | wc -l)
 
+  echo "Total CSV "${all_csv}", succeeded CSV "${succeded_csv}
+
   if [ ${all_csv}"" == ${succeded_csv}"" ]; then
     if [ ${all_csv}"" != "1" ]; then
       echo "===> all operators succeeded, all [${all_csv}] succeded [${succeded_csv}] !"
@@ -180,8 +181,10 @@ do
   fi
 done
 
-#????
-fi
+#-----------------------------------------------
+# Force resource deletion (optional)
+#-----------------------------------------------
+if [ "${FORCE_DELETION}" == "true" ]; then
 
 #-----------------------------------------------
 # Delete BAI PVC
@@ -231,14 +234,18 @@ oc get pods -n ${CP4BA_AUTO_NAMESPACE} | grep operator | awk '{print $1}' | xarg
 
 waitForResourceCreated ${CP4BA_AUTO_NAMESPACE} eventprocessors iaf-insights-engine-event-processor 5
 
+# Force deletion
+fi
+
 waitForEventprocessorReady
+
 
 #-----------------------------------------------
 # Create Flink route
 #-----------------------------------------------
 
 echo -e "\e[1;42m Creating Flink route... \e[0m"
-
+FLINK_ROUTE_NAME="flink-ui"
 EVENT_PROCESSOR_NAME=$(oc get eventprocessor -n ${CP4BA_AUTO_NAMESPACE} | grep True | awk '{print $1}')
 FLINK_SECRET_NAME=$(oc get eventprocessor -n ${CP4BA_AUTO_NAMESPACE} ${EVENT_PROCESSOR_NAME} -o jsonpath='{.status.endpoints[0].authentication.secret.secretName}')
 FLINK_USERNAME=$(oc get secret -n ${CP4BA_AUTO_NAMESPACE} ${FLINK_SECRET_NAME} -o jsonpath='{.data.username}' | base64 -d)

@@ -15,7 +15,7 @@ Set your namespace in var CP4BA_AUTO_NAMESPACE
 
 Set TRACE as you need
 
-## Create 'custom-bpc-workforce-secret'
+## Run script
 
 Run ./bai-cfg.sh ...your-namespace...
 ```
@@ -24,19 +24,16 @@ Run ./bai-cfg.sh ...your-namespace...
 ```
 
 
-## Update ICP4ACluster CR 
-
-Access your CR cluster and update the following sections
-
-### Get your CR 
+### INFO: ICP4ACluster CR modified 
 
 ```
+# get CR
 oc get ICP4ACluster -n ${CP4BA_AUTO_NAMESPACE}
 ```
 
-### bai_configuration
+### INFO: bai_configuration
 
-Add the following YAML snippet (keep aligned the value of 'workforce_insights_secret' with the secret created using shell script)
+The script add the following YAML snippet 
 ```
     bpmn:
       install: true
@@ -49,11 +46,14 @@ Add the following YAML snippet (keep aligned the value of 'workforce_insights_se
       create_route: true
 ```
 
-### workflow_authoring_configuration (if authoring environment)
+### INFO: workflow_authoring_configuration (if authoring environment)
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/22.0.2?topic=parameters-business-automation-workflow-authoring
-### baw_configuration (if NOT authoring environment)
+
+### INFO: baw_configuration (if NOT authoring environment)
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/22.0.2?topic=parameters-business-automation-workflow-runtime-workstream-services
 
+
+The script add the following YAML snippet 
 ```
     business_event:
       enable: true
@@ -75,7 +75,7 @@ Pods of BAW runtime
 
 Pods of IAF INSIGHTS ENGINE
 
-## Access ES storage
+## Access ES storage, some examples
 ```
 export CP4BA_AUTO_NAMESPACE=cp4ba
 ES_USER=$(oc get cm -n ${CP4BA_AUTO_NAMESPACE} icp4adeploy-cp4ba-access-info -o jsonpath='{.data.bai-access-info}' | grep "Elasticsearch Username" | awk '{print $3}')
@@ -83,41 +83,57 @@ ES_PASSW=$(oc get cm -n ${CP4BA_AUTO_NAMESPACE} icp4adeploy-cp4ba-access-info -o
 echo "ES CREDENTIALS: "${ES_USER} / ${ES_PASSW}
 
 IAF_ES_URL="https://"$(oc get routes -n ${CP4BA_AUTO_NAMESPACE} iaf-system-es -o jsonpath='{.spec.host}')
+```
 
-# monitored sources
+### monitored sources
+```
 curl -sk -X GET -u ${ES_USER}:${ES_PASSW} ${IAF_ES_URL}/icp4ba-bai-store-monitoring-sources/_search?pretty=true | jq .hits.hits[]._source.monitoringSources[].name
+```
 
-# dashboards 
+### dashboards 
+```
 curl -sk -X GET -u ${ES_USER}:${ES_PASSW} ${IAF_ES_URL}/icp4ba-bai-store-dashboards/_search?pretty=true | jq .hits.hits[]._source.name
+```
 
-# alerts
+### alerts
+```
 curl -sk -X GET -u ${ES_USER}:${ES_PASSW} ${IAF_ES_URL}/icp4ba-bai-store-alerts/_search?pretty=true
+```
 
-# indices
+### indices
+```
 curl -sk -X GET -u ${ES_USER}:${ES_PASSW} ${IAF_ES_URL}/_cat/indices
+```
 
-#----------------------------------------
-# completed process
-
+### completed process
+```
 KEY=icp4ba-bai-process-summaries-completed
 IDX_NAME=$(curl -sk -X GET -u ${ES_USER}:${ES_PASSW} -H 'Content-Type: application/json' ${IAF_ES_URL}/_cat/indices | grep ${KEY} | head -1 | awk '{print $3}')
 
 # completed process infos
 curl -sk -X POST -u ${ES_USER}:${ES_PASSW} -H 'Content-Type: application/json' "${IAF_ES_URL}/${IDX_NAME}/_search?scroll=1m&pretty=true&size=1000" -d '{"query": {"term": {"_index" : "${IDX_NAME}"}}}'
+```
 
-# activities of completed process
+### activities of completed process
+```
 curl -sk -X POST -u ${ES_USER}:${ES_PASSW} -H 'Content-Type: application/json' ${IAF_ES_URL}/${IDX_NAME}/_search | jq . | more
+```
 
-# query with offset
+### query with offset
+```
 curl -sk -X POST -u ${ES_USER}:${ES_PASSW} -H 'Content-Type: application/json' ${IAF_ES_URL}/${IDX_NAME}/_search?pretty -d'{"from": 1, "size": 1}'
+```
 
-# use scroll id
+### use scroll id
+```
 RESPONSE=$(curl -sk -X POST -u ${ES_USER}:${ES_PASSW} -H 'Content-Type: application/json' "${IAF_ES_URL}/${IDX_NAME}/_search?scroll=1m&pretty=true&size=1000" -d'{"query": {"term": {"_index" : "${IDX_NAME}"}}}')
 SCROLL_ID=$(echo $RESPONSE | jq ._scroll_id | sed 's/\"//g')
 curl -sk -X POST -u ${ES_USER}:${ES_PASSW} -H 'Content-Type: application/json' ${IAF_ES_URL}/${IDX_NAME}/_search -d '{ "scroll: "1m", "_scroll_id" : "${SCROLL_ID}"}'
+```
 
 
-# other index KEY
+### other index KEY
+```
 icp4ba-bai-process-summaries-active
 icp4ba-bai-process-timeseries
 icp4ba-bai-process-summaries-active

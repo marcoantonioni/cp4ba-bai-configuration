@@ -83,6 +83,7 @@ ES_PASSW=$(oc get cm -n ${CP4BA_AUTO_NAMESPACE} icp4adeploy-cp4ba-access-info -o
 echo "ES CREDENTIALS: "${ES_USER} / ${ES_PASSW}
 
 IAF_ES_URL="https://"$(oc get routes -n ${CP4BA_AUTO_NAMESPACE} iaf-system-es -o jsonpath='{.spec.host}')
+echo "ES URL "${IAF_ES_URL}
 ```
 
 ### monitored sources
@@ -97,6 +98,10 @@ curl -sk -X GET -u ${ES_USER}:${ES_PASSW} ${IAF_ES_URL}/icp4ba-bai-store-dashboa
 
 ### alerts
 ```
+# totale
+curl -sk -X GET -u ${ES_USER}:${ES_PASSW} ${IAF_ES_URL}/icp4ba-bai-store-alerts/_search | jq .hits.total.value
+
+# dettagli
 curl -sk -X GET -u ${ES_USER}:${ES_PASSW} ${IAF_ES_URL}/icp4ba-bai-store-alerts/_search?pretty=true
 ```
 
